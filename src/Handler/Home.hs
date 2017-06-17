@@ -33,14 +33,14 @@ postHomeR = do
             let ePandoc = case reader of
                     MarkdownStrict -> readMarkdownStrict (U.toString fileBytes)
             case ePandoc of
-                Left m -> invalidArgs ["ePandoc", tshow m]
+                Left m -> invalidArgs ("ePandoc" : lines (tshow m))
                 Right pandoc -> case writer of
                     Pdf -> do
-                        epdf <- liftIO $ makePDF "lualatex" writeLaTeX
+                        epdf <- liftIO $ makePDF "/usr/bin/lualatex" writeLaTeX
                             (def { writerTemplate = Just $(embedStringFile "templates/pdf.sty") })
                             pandoc
                         case epdf of
-                            Left m -> invalidArgs ["epdf", tshow m]
+                            Left m -> invalidArgs ("epdf" : lines (toStrict (decodeUtf8 m)))
                             Right pdf -> do
                                 addHeaderContentDisposition
                                     (T.pack (dropExtension (T.unpack (fileName file))) <> ".pdf")
