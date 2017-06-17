@@ -37,7 +37,7 @@ postHomeR = do
                 Right pandoc -> case writer of
                     Pdf -> do
                         epdf <- liftIO $ makePDF "/usr/bin/lualatex" writeLaTeX
-                            (def { writerTemplate = Just $(embedStringFile "templates/pdf.sty") })
+                            laTeXWriterOptions
                             pandoc
                         case epdf of
                             Left m -> invalidArgs ("epdf" : lines (toStrict (decodeUtf8 m)))
@@ -45,6 +45,12 @@ postHomeR = do
                                 addHeaderContentDisposition
                                     (T.pack (dropExtension (T.unpack (fileName file))) <> ".pdf")
                                 sendResponse ("application/pdf" :: ContentType, toContent pdf)
+                    LaTeX -> do
+                        addHeaderContentDisposition
+                                (T.pack (dropExtension (T.unpack (fileName file))) <> ".tex")
+                        sendResponse ( "application/x-tex" :: ContentType
+                                     , toContent $ writeLaTeX laTeXWriterOptions pandoc
+                                     )
 
 data PandocForm = PandocForm
     { file   :: FileInfo
@@ -55,7 +61,7 @@ data PandocForm = PandocForm
 data PandocReader = MarkdownStrict
     deriving (Eq, Ord, Show, Read, Enum, Bounded)
 
-data PandocWriter = Pdf
+data PandocWriter = Pdf | LaTeX
     deriving (Eq, Ord, Show, Read, Enum, Bounded)
 
 pandocForm :: Form PandocForm
@@ -69,6 +75,12 @@ readMarkdownStrict :: String -> Either PandocError Pandoc
 readMarkdownStrict = readMarkdown def
     { readerExtensions = strictExtensions
     , readerStandalone = True
+    }
+
+laTeXWriterOptions :: WriterOptions
+laTeXWriterOptions = def
+    { writerTemplate = Just $(embedStringFile "templates/pdf.sty")
+    , writerListings = True
     }
 
 -- | Bytestring 'fileSource'
