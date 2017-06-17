@@ -1,0 +1,3 @@
+<div .container>
+    <form method=post enctype=#{enctype}>
+        ^{form}
