@@ -34,6 +34,9 @@
 
 <footer .footer>
     <div .container>
+      <p>
+        当サイトではCookieを使ってGoogle Analyticsを使っています.
+      <p>
         <a href="https://www.ncaq.net">
-            <p .text-muted>
-                #{appCopyright $ appSettings master}
+          <p .text-muted>
+            #{appCopyright $ appSettings master}
